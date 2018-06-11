@@ -1,0 +1,122 @@
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<style type="text/css">
+#cv {
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+  left: 10px;
+}
+
+</style>
+</head>
+<body>
+  <div id="main">
+    <canvas id="cv" width="400" height="400">
+      キャンバス未対応
+    </canvas>
+  </div>
+</body>
+<script>
+/* Canvasテスト
+ * 18-05-20 作成
+ * 描画オブジェクトとして作って勝手に描画
+ */
+// 変数宣言
+var c; //コンテキストオブジェクト（drawでも使用）
+var img;
+var drawobj = []; //描画オブジェクトのリスト
+
+var rndcolor = function(){
+  var colr = Math.floor( Math.random() * 256 );
+  var colg = Math.floor( Math.random() * 256 );
+  var colb = Math.floor( Math.random() * 256 );
+  return `rgb(${colr},${colg},${colb})`;
+}
+
+// 描画オブジェクト: 円
+var DrawCirc = function(x,y,r) {
+  this.x = x;
+  this.y = y;
+  this.r = r;
+  this.color = rndcolor();
+  var ang = Math.random()*Math.PI*2;
+  this.vx = 2*Math.cos(ang);
+  this.vy = 2*Math.sin(ang);
+  this.ay = 0.1;
+  this.log = false;
+}
+// drawcv関数: コンテキストcを引数にとり，cに対して描画．
+DrawCirc.prototype.drawcv = function(c) {
+  c.beginPath();
+  c.fillStyle = this.color;
+  c.arc(this.x,this.y,this.r, 0, Math.PI*2, false);
+  c.fill();
+}
+//
+DrawCirc.prototype.update = function(){
+  if(this.x + this.vx < this.r || this.x + this.vx > 400 - this.r){
+    this.vx *= -1;
+  }
+  if(this.y + this.vy < this.r || this.y + this.vy > 400 - this.r){
+    this.vy *= -1;
+  } else {
+    this.vy += this.ay;
+  }
+  //console.log(this.y);
+  this.x += this.vx;
+  this.y += this.vy;
+}
+
+
+function loop(){
+  draw();
+}
+
+function draw(){
+  var i;
+  c.clearRect(0,0,400,400);
+
+  c.lineWidth = 1;
+  c.strokeStyle = '#444';
+  //縦線
+  for(i=1;i<4;i++){
+    c.beginPath();
+    c.moveTo(100*i,0);
+    c.lineTo(100*i,400);
+    c.stroke();
+  }
+    //横線
+  for(i=1;i<4;i++){
+    c.beginPath();
+    c.moveTo(0,100*i);
+    c.lineTo(400,100*i);
+    c.stroke();
+  }
+  //描画obj
+  for(let obj of drawobj){
+    obj.drawcv(c);
+    obj.update();
+  }
+}
+
+$(function() {
+  if(HTMLCanvasElement){
+    // canvas要素を取得
+    var cv = $('#cv').get(0);
+    // コンテキストオブジェクトを生成
+    c = cv.getContext('2d');
+    c.save();
+    // 描画obj作成
+    for(let i=0 ; i<10 ; i++){
+      drawobj.push(new DrawCirc(Math.floor(Math.random()*39)*10+5,Math.floor(Math.random()*39)*10+5,15));
+    }
+    drawobj[0].log = true;
+    setInterval('loop()',10); //ループ開始
+  }
+
+});
+</script>
+</html>
